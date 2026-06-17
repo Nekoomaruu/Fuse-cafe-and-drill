@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Menu — Fuse Cafe & Grill</title>
+<meta name="description" content="Menu lengkap Fuse Cafe & Grill: steak premium, pasta, nasi goreng, kopi, dan minuman."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"/>
+<link rel="stylesheet" href="assets/css/style.css"/>
+</head>
+<body>
+<div id="site-nav"></div>
+
+<section class="section-sm" style="padding-top:3rem">
+  <div class="container">
+    <span class="eyebrow">Menu Lengkap</span>
+    <h1 style="font-size:clamp(2rem,4vw,2.8rem);margin:.4rem 0 .6rem">Pilih Favoritmu</h1>
+    <p style="color:var(--muted);max-width:620px">Geser kategori di bawah untuk melompat ke bagian menu. Tekan tombol <strong>Pesan</strong> untuk langsung order via WhatsApp.</p>
+  </div>
+</section>
+
+<nav class="cat-nav">
+  <div class="cat-nav-inner" id="cat-chips"></div>
+</nav>
+
+<div class="container" id="menu-host"></div>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+(function(){
+  const chips = document.getElementById('cat-chips');
+  const host = document.getElementById('menu-host');
+
+  chips.innerHTML = window.MENU.map(c=>`<button class="cat-chip" data-id="${c.id}">${c.name}</button>`).join('');
+
+  host.innerHTML = window.MENU.map(c=>{
+    const withImg = c.items.filter(i=>i.image);
+    const noImg = c.items.filter(i=>!i.image);
+    return `
+      <section class="cat-section" id="${c.id}">
+        <h2>${c.name}</h2>
+        ${c.blurb?`<p class="blurb">${c.blurb}</p>`:''}
+        ${withImg.length?`<div class="grid grid-3" style="margin-bottom:${noImg.length?'1.5rem':'0'}">${withImg.map(item=>`
+          <article class="menu-card">
+            <div class="thumb">
+              <img loading="lazy" src="${item.image}" alt="${item.name}"/>
+              ${item.tag?`<span class="tag">${item.tag}</span>`:''}
+            </div>
+            <div class="body">
+              <h3>${item.name}</h3>
+              ${item.desc?`<p class="desc">${item.desc}</p>`:''}
+              <div class="price-row">
+                <span class="price">${item.price}</span>
+                <a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="${window.waLink('Halo, saya ingin memesan '+item.name+'.')}">Pesan</a>
+              </div>
+            </div>
+          </article>
+        `).join('')}</div>`:''}
+        ${noImg.length?`<div class="simple-list">${noImg.map(item=>`
+          <div class="row">
+            <span class="name">${item.name}${item.desc?` <span style="color:var(--muted);font-size:.82rem">— ${item.desc}</span>`:''}</span>
+            <span class="price">${item.price}</span>
+          </div>
+        `).join('')}</div>`:''}
+      </section>
+    `;
+  }).join('');
+
+  // Chip click → smooth scroll with offset
+  chips.addEventListener('click', e=>{
+    const b = e.target.closest('.cat-chip'); if(!b) return;
+    const t = document.getElementById(b.dataset.id);
+    if (t){
+      const y = t.getBoundingClientRect().top + window.scrollY - 130;
+      window.scrollTo({top:y, behavior:'smooth'});
+    }
+  });
+
+  // Highlight active chip on scroll
+  const sections = window.MENU.map(c=>document.getElementById(c.id));
+  const chipEls = [...chips.querySelectorAll('.cat-chip')];
+  const onScroll = ()=>{
+    const y = window.scrollY + 160;
+    let active = sections[0];
+    for (const s of sections){ if (s.offsetTop <= y) active = s; }
+    chipEls.forEach(c=>c.classList.toggle('active', c.dataset.id===active.id));
+    // scroll chip into view
+    const ac = chipEls.find(c=>c.classList.contains('active'));
+    if (ac) ac.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'});
+  };
+  document.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>
